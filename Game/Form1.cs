@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Game.Model;
 
@@ -30,6 +31,7 @@ namespace Game
             timer2.Interval = 2000;
             timer2.Start();
             //Paths.Add(gameField.BuildPath(new Vector(24, 0), 0, 15, 1));
+            Paths.Add(gameField.BuildPath(new Vector(24, 0), 1, 14, 1));
             Paths.Add(gameField.BuildPath(new Vector(23, 0), 0, 14, 2));
             playerView = new PlayerView(player);
             //bots.Add(new Bot(23, 0, Direction.Up, 2, 0.5));
@@ -43,24 +45,31 @@ namespace Game
             player.CheckNextMove();
             foreach (var bot in bots)
             {
-                bot.Item1.CheckNextMove();
+                CheckNextMove(bot);
             }
             /*bots[0].CheckNextMove();*/
             Invalidate();
         }
+
+        void CheckNextMove(Tuple<Bot, BotView> bot)
+        {
+            var task = new Task(() => bot.Item1.CheckNextMove());
+            task.Start();
+        }
         
         void OnTimer2(object sender, EventArgs e)
         {
-            var bot = new Bot(23, 0, Direction.Up, 1, 0.5);
+            Random rnd = new Random();
+            int road = rnd.Next(0,2);
+            var bot = new Bot(24 - road, 0, Direction.Up, road + 1, 0.5);
             var botView = new BotView(bot);
-            bot.Path = Paths[0];
+            bot.Path = Paths[road];
             bots.Add(Tuple.Create<Bot, BotView>(bot, botView));
             /*bots.Add(new Bot(23, 0, Direction.Up, 1, 0.2));
             botView = new BotView(bots[0]);*/
             Invalidate();
         }
         
- 
         void Form1_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
